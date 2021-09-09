@@ -17,10 +17,10 @@ extern TIM_HandleTypeDef htim14;
 
 void init_fan(void);
 static void start_fan_power();
-static void start_is_fan_okay_control(){;
+static void start_is_fan_okay_control();
 static void set_fan_power(uint8_t pwm_duty_cycle);
+void start_PWM_generation();
 
-}
 void init_fan(){
 	start_fan_power();
 	start_is_fan_okay_control();
@@ -78,11 +78,9 @@ static void set_fan_power(uint8_t pwm_duty_cycle){
 	if (pwm_duty_cycle > FAN_POWER_100_PERCENT)
 		pwm_duty_cycle = FAN_POWER_100_PERCENT;
 
-	__HAL_TIM_SET_COMPARE(&htim4, TIM_PWM_CHANNEL_FAN, pwm_duty_cycle);
+	__HAL_TIM_SET_COMPARE(&htim14, TIM_PWM_CHANNEL_FAN_POWER, pwm_duty_cycle);
 }
 
-static void start_pwm_generation(){
+void start_pwm_generation(){
 	HAL_TIM_PWM_Start(&htim3, TIM_PWM_CHANNEL_FAN_POWER);
 }
-
-

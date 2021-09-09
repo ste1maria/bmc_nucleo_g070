@@ -352,13 +352,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, _1V8_EN_Pin|LED_GREEN_Pin|DDR1_VPP_EN_Pin|_3V3_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, DDR_VTT0_EN_Pin|DDR_VTT1_EN_Pin|DDR0_VPP_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, DDR_VTT0_EN_Pin|DDR0_VPP_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : _0V9_PG_Pin _1V2_PG_Pin _0V9_ALERTn_FAULTn_Pin DDR_VTT0_PG_Pin
-                           DDR_VTT1_PG_Pin _5V_DRMOS_THWN_Pin DDR0_VPP_PG_Pin DDR1_VPP_PG_Pin */
+                           DDR_VTT1_PG_Pin _5V_DRMOS_THWN_Pin DDR1_VPP_PG_Pin */
   GPIO_InitStruct.Pin = _0V9_PG_Pin|_1V2_PG_Pin|_0V9_ALERTn_FAULTn_Pin|DDR_VTT0_PG_Pin
-                          |DDR_VTT1_PG_Pin|_5V_DRMOS_THWN_Pin|DDR0_VPP_PG_Pin|DDR1_VPP_PG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+                          |DDR_VTT1_PG_Pin|_5V_DRMOS_THWN_Pin|DDR1_VPP_PG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
@@ -391,24 +391,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(LED_GREEN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DDR_VTT0_EN_Pin DDR_VTT1_EN_Pin DDR0_VPP_EN_Pin */
-  GPIO_InitStruct.Pin = DDR_VTT0_EN_Pin|DDR_VTT1_EN_Pin|DDR0_VPP_EN_Pin;
+  /*Configure GPIO pins : DDR_VTT0_EN_Pin DDR0_VPP_EN_Pin */
+  GPIO_InitStruct.Pin = DDR_VTT0_EN_Pin|DDR0_VPP_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : _1V8_PG_Pin _3V3_PG_Pin */
-  GPIO_InitStruct.Pin = _1V8_PG_Pin|_3V3_PG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pin : DDR_VTT1_EN_Pin */
+  GPIO_InitStruct.Pin = DDR_VTT1_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(DDR_VTT1_EN_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : _1V8_PG_Pin _3V_3_PG_Pin */
+  GPIO_InitStruct.Pin = _1V8_PG_Pin|_3V_3_PG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : _5V_DRMOS_PG_Pin */
-  GPIO_InitStruct.Pin = _5V_DRMOS_PG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(_5V_DRMOS_PG_GPIO_Port, &GPIO_InitStruct);
 
 }
 

@@ -9,6 +9,7 @@ C_SRCS += \
 ../Core/Src/SMP_JTAG.c \
 ../Core/Src/SMP_dialog.c \
 ../Core/Src/debug_uart.c \
+../Core/Src/fan.c \
 ../Core/Src/main.c \
 ../Core/Src/stm32g0xx_hal_msp.c \
 ../Core/Src/stm32g0xx_it.c \
@@ -21,6 +22,7 @@ OBJS += \
 ./Core/Src/SMP_JTAG.o \
 ./Core/Src/SMP_dialog.o \
 ./Core/Src/debug_uart.o \
+./Core/Src/fan.o \
 ./Core/Src/main.o \
 ./Core/Src/stm32g0xx_hal_msp.o \
 ./Core/Src/stm32g0xx_it.o \
@@ -33,6 +35,7 @@ C_DEPS += \
 ./Core/Src/SMP_JTAG.d \
 ./Core/Src/SMP_dialog.d \
 ./Core/Src/debug_uart.d \
+./Core/Src/fan.d \
 ./Core/Src/main.d \
 ./Core/Src/stm32g0xx_hal_msp.d \
 ./Core/Src/stm32g0xx_it.d \
