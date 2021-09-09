@@ -8,6 +8,6 @@
 #ifndef INC_DC_DC_H_
 #define INC_DC_DC_H_
 
-
+void start_power_up_sequence();
 
 #endif /* INC_DC_DC_H_ */

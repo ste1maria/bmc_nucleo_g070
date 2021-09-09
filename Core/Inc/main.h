@@ -102,6 +102,8 @@ void Error_Handler(void);
 #define TCK_GPIO_Port GPIOA
 #define _3V3_EN_Pin GPIO_PIN_15
 #define _3V3_EN_GPIO_Port GPIOA
+#define DDR0_VPP_PG_Pin GPIO_PIN_8
+#define DDR0_VPP_PG_GPIO_Port GPIOC
 #define _1V8_PG_Pin GPIO_PIN_0
 #define _1V8_PG_GPIO_Port GPIOD
 #define _3V_3_PG_Pin GPIO_PIN_1
