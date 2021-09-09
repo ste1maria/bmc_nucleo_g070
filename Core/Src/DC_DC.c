@@ -203,35 +203,35 @@ static void handle_PG_failed(uint16_t GPIO_Pin){
 	 */
 	if (GPIO_Pin == _5V_DRMOS_EN_Pin){
 		curcuit_5V_PG_OK = false;
-		set_power_up_stage(DRMOS_STAGE);
+		//set_power_up_stage(DRMOS_STAGE);
 	}
 	else if (GPIO_Pin == _0V9_PG_Pin){
 		 curcuit_0V9_PG_OK = false;
-			set_power_up_stage(_0V9_1V2_1V8_STAGE);
+		//	set_power_up_stage(_0V9_1V2_1V8_STAGE);
 	}
 	else if (GPIO_Pin == _1V2_PG_Pin){
 		curcuit_1V2_PG_OK = false;
-		set_power_up_stage(_0V9_1V2_1V8_STAGE);
+	//	set_power_up_stage(_0V9_1V2_1V8_STAGE);
 	}
 	else if (GPIO_Pin == _1V8_PG_Pin){
 		curcuit_1V8_PG_OK = false;
-		set_power_up_stage(_0V9_1V2_1V8_STAGE);
+		//set_power_up_stage(_0V9_1V2_1V8_STAGE);
 	}
 	else	if (GPIO_Pin == DDR_VTT0_PG_Pin){
 		curcuit_DDR_VTT0_PG_OK = false;
-		set_power_up_stage(DDR_STAGE);
+		//set_power_up_stage(DDR_STAGE);
 	}
 	else if(GPIO_Pin == DDR_VTT1_PG_Pin){
 		curcuit_DDR_VTT1_PG_OK = false;
-		set_power_up_stage(DDR_STAGE);
+		//set_power_up_stage(DDR_STAGE);
 	}
 	else if (GPIO_Pin == DDR0_VPP_PG_Pin){
 		curcuit_DDR0_PG_OK = false;
-		set_power_up_stage(DDR_STAGE);
+		//set_power_up_stage(DDR_STAGE);
 	}
 	else if (GPIO_Pin == DDR1_VPP_PG_Pin){
 		curcuit_DDR1_PG_OK = false;
-		set_power_up_stage(DDR_STAGE);
+		//set_power_up_stage(DDR_STAGE);
 	}
 
 	// only if we were moving UP, should not repeat
