@@ -20,6 +20,7 @@ void handle_ALERTn_FAULTn();
 void handle_ALERT_FAULT();
 
 typedef enum {
+	curciut_DRMOS,
 	curcuit_5V,			// NCP711 (enable, power good); NCP302035 ( temperature)
 	curcuit_0V9,			// NCP4200
 	curcuit_1V2,			// FAN23SV10MAMPX

@@ -4,19 +4,6 @@
 #include "SMP_dialog.h"
 /* -------- private variables --------- */
 
-typedef enum  {
-	DRMOS_STAGE,
-	_0V9_1V2_1V8_STAGE,
-	_3V3_STAGE,
-	DDR_STAGE,
-	FINISHED_POWER_SETUP
-} pwup_seq_stage;
-
-pwup_seq_stage first_stage = DRMOS_STAGE;
-pwup_seq_stage power_up_sequence_stage = first_stage;
-
-power_management_curcuit first_curciut = curcuit_5V;
-
 _Bool curciut_5V_THWN_OK = false;
 _Bool curcuit_5V_PG_OK = false;
 _Bool curcuit_0V9_notALERT_notFAULT= false;
@@ -39,7 +26,6 @@ power_switch_mode power_sequence_direction = mode_power_up;
 void start_power_up_sequence();
 void start_power_down_sequence();
 
-static void start_first_pwup_seq_stage();
 static void terminate_current_pwup_seq_stage();
 
 static void handle_PG_OK(uint16_t GPIO_Pin);
@@ -54,34 +40,35 @@ static void handle_ALERT_FAULT();
 static void set_power_up_stage(pwup_seq_stage stage);
 static pwup_seq_stage get_power_up_stage();
 
-/* -----------------methods ----------------- */
-
+/* -----------------DEFINITIONS ----------------- */
+// stays here
 void start_power_up_sequence(void){
 	power_sequence_direction = mode_power_up;
 	start_first_pwup_seq_stage();
 }
 
+// stays here
 void start_power_down_sequence(void){
 	power_sequence_direction = mode_power_down;
 	terminate_current_pwup_seq_stage();
 }
 
-static void start_first_pwup_seq_stage(){
-	set_power_up_stage(first_stage);
+/* TODO: eliminate repeating code*/
 
-	enable_power_curcuit(first_curciut);
-}
-
+// stays here - but clean up
 static void terminate_current_pwup_seq_stage(){
 
 	pwup_seq_stage stage = get_power_up_stage();
 
 	if (stage == DRMOS_STAGE){
 			// no change in stage, coz it is the first one
-		disable_power_curcuit(curcuit_5V);
+		//disable_power_curcuit();
+	}
+	else if (stage == _5V_STAGE) {
+		disable_power_curcuit(curciut_DRMOS);
 	}
 	else if (stage == _0V9_1V2_1V8_STAGE) {
-		set_power_up_stage(DRMOS_STAGE);
+		set_power_up_stage(_5V_STAGE);
 
 		disable_power_curcuit(curcuit_5V);
 	}
@@ -107,27 +94,49 @@ static void terminate_current_pwup_seq_stage(){
 	}
 }
 
-/* TODO: eliminate repeating code*/
-static void run_next_power_up_stage(pwup_seq_stage next_stage){
-	switch (next_stage){
+
+// stays here - but clean up (???)
+static void run_next_power_up_stage(/*pwup_seq_stage current_stage*/){
+	pwup_seq_stage current_stage = get_power_up_stage();
+
+	switch (current_stage){
 	case DRMOS_STAGE:
 		//enable next curcuit
+		set_power_up_stage(_0V9_1V2_1V8_STAGE);
+
+		enable_next_curcuit(curcuit_0V9);
+		enable_next_curcuit(curcuit_1V2);
+		enable_next_curcuit(curcuit_1V8);
+
 		break;
 
 	case _0V9_1V2_1V8_STAGE:
 		//enable next curcuit
+		set_power_up_stage(_3V3_STAGE);
+
+		enable_next_curcuit(curcuit_3V3);
 		break;
 
 	case _3V3_STAGE:
 		//enable next curcuit
+		set_power_up_stage(DDR_STAGE);
+
+		enable_next_curcuit(curcuit_DDR_VTT0);
+		enable_next_curcuit(curcuit_DDR_VTT1);
+		enable_next_curcuit(curcuit_DDR0);
+		enable_next_curcuit(curcuit_DDR1);
 		break;
 
 	case DDR_STAGE:
 		//end power-up sequence
+		set_power_up_stage(FINISHED_POWER_SETUP);
+
+		/*enable SMP*/
 		break;
 	}
 }
 
+// stays here, but clean up
 static void enable_next_curcuit(power_management_curcuit next_curcuit){
 	/*
 	 * 	curcuit_5V,			// NCP711 (enable, power good); NCP302035 ( temperature)
@@ -141,24 +150,30 @@ static void enable_next_curcuit(power_management_curcuit next_curcuit){
 	curcuit_DDR1		// LD39100
 	 */
 	switch (next_curcuit){
-	case DRMOS_STAGE:
+	case curcuit_5V:
 		//enable next curcuit
 		break;
 
-	case _0V9_1V2_1V8_STAGE:
+	case curcuit_0V9:
+	case curcuit_1V2:
+	case curcuit_1V8:
 		//enable next curcuit
 		break;
 
-	case _3V3_STAGE:
+	case curcuit_3V3:
 		//enable next curcuit
 		break;
 
-	case DDR_STAGE:
+	case curcuit_DDR_VTT0:
+	case	curcuit_DDR_VTT1:
+	case curcuit_DDR0:
+	case curcuit_DDR1:
 		//end power-up sequence
 		break;
 	}
 }
 
+// STAYS HERE, but clean up
 static void handle_PG_OK(uint16_t GPIO_Pin){
 	/*1) get the power-up sequence stage
 	 * 2) set next power-up sequence stage
@@ -171,7 +186,7 @@ static void handle_PG_OK(uint16_t GPIO_Pin){
 
 			curcuit_5V_PG_OK = true;
 
-			run_next_power_up_stage(_0V9_1V2_1V8_STAGE);
+			run_next_power_up_stage(current_stage = _0V9_1V2_1V8_STAGE);
 
 			enable_power_curcuit(curcuit_0V9);
 			enable_power_curcuit(curcuit_1V2);
@@ -237,6 +252,7 @@ static void handle_PG_OK(uint16_t GPIO_Pin){
 	}
 }
 
+// STAYS HERE, but clean up
 static void handle_PG_failed(uint16_t GPIO_Pin){
 	/*1) get the power-up sequence stage
 	 * 2) run reversed order set up
@@ -280,6 +296,7 @@ static void handle_PG_failed(uint16_t GPIO_Pin){
 	}
 }
 
+// STAYS HERE, but clean up
 static void handle_temperature_OK(){
 	curciut_5V_THWN_OK = true;
 
@@ -292,6 +309,7 @@ static void handle_temperature_OK(){
 	}
 }
 
+// STAYS HERE, but clean up
 static void handle_temperature_not_OK(){
 	/*1) get the power-up sequence stage
 	 * 2) run reversed order set up
@@ -300,6 +318,7 @@ static void handle_temperature_not_OK(){
 	start_power_down_sequence();
 }
 
+// STAYS HERE, but clean up
 static void handle_ALERTn_FAULTn(){
 	/*1) get the power-up sequence stage
 	 * 2) set next power-up sequence stage
@@ -320,6 +339,7 @@ static void handle_ALERTn_FAULTn(){
 	}
 }
 
+// STAYS HERE, but clean up
 static void handle_ALERT_FAULT(){
 	/*1) get the power-up sequence stage
 	 * 2) run reversed order set up
@@ -328,11 +348,12 @@ static void handle_ALERT_FAULT(){
 	start_power_down_sequence();
 }
 
-
+// STAYS HERE, but clean up
 static void set_power_up_stage(pwup_seq_stage stage){
 	power_up_sequence_stage = stage;
 }
 
+// STAYS HERE, but clean up
 static  pwup_seq_stage get_power_up_stage(){
 	return power_up_sequence_stage;
 }
