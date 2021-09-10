@@ -12,19 +12,10 @@ typedef enum  {
 	FINISHED_POWER_SETUP
 } pwup_seq_stage;
 
-pwup_seq_stage power_up_sequence_stage = DRMOS_STAGE;
+pwup_seq_stage first_stage = DRMOS_STAGE;
+pwup_seq_stage power_up_sequence_stage = first_stage;
 
-typedef enum {
-	curcuit_5V,			// NCP711 (enable, power good); NCP302035 ( temperature)
-	curcuit_0V9,			// NCP4200
-	curcuit_1V2,			// FAN23SV10MAMPX
-	curcuit_1V8,			// NCP51402
-	curcuit_3V3,			// NCP51402
-	curcuit_DDR_VTT0,	// NCP51402
-	curcuit_DDR_VTT1,	// NCP51402
-	curcuit_DDR0,		// LD39100
-	curcuit_DDR1		// LD39100
-} power_management_curcuit;
+power_management_curcuit first_curciut = curcuit_5V;
 
 _Bool curciut_5V_THWN_OK = false;
 _Bool curcuit_5V_PG_OK = false;
@@ -48,6 +39,9 @@ power_switch_mode power_sequence_direction = mode_power_up;
 void start_power_up_sequence();
 void start_power_down_sequence();
 
+static void start_first_pwup_seq_stage();
+static void terminate_current_pwup_seq_stage();
+
 static void handle_PG_OK(uint16_t GPIO_Pin);
 static void handle_PG_failed(uint16_t GPIO_Pin);
 
@@ -60,23 +54,25 @@ static void handle_ALERT_FAULT();
 static void set_power_up_stage(pwup_seq_stage stage);
 static pwup_seq_stage get_power_up_stage();
 
-static void enable_first_pwup_seq_stage();
-static void enable_power_curcuit(power_management_curcuit curcuit);
-static void disable_current_pwup_seq_stage();
-static void disable_power_curcuit(power_management_curcuit curcuit);
-/* ------- methods ------- */
+/* -----------------methods ----------------- */
 
-void start_power_up_sequence(void){\
+void start_power_up_sequence(void){
 	power_sequence_direction = mode_power_up;
-	enable_first_pwup_seq_stage();
+	start_first_pwup_seq_stage();
 }
 
 void start_power_down_sequence(void){
 	power_sequence_direction = mode_power_down;
-	disable_current_pwup_seq_stage();
+	terminate_current_pwup_seq_stage();
 }
 
-static void disable_current_pwup_seq_stage(){
+static void start_first_pwup_seq_stage(){
+	set_power_up_stage(first_stage);
+
+	enable_power_curcuit(first_curciut);
+}
+
+static void terminate_current_pwup_seq_stage(){
 
 	pwup_seq_stage stage = get_power_up_stage();
 
@@ -111,13 +107,57 @@ static void disable_current_pwup_seq_stage(){
 	}
 }
 
-static void enable_first_pwup_seq_stage(){
-	set_power_up_stage(DRMOS_STAGE);
+/* TODO: eliminate repeating code*/
+static void run_next_power_up_stage(pwup_seq_stage next_stage){
+	switch (next_stage){
+	case DRMOS_STAGE:
+		//enable next curcuit
+		break;
 
-	enable_power_curcuit(curcuit_5V);
+	case _0V9_1V2_1V8_STAGE:
+		//enable next curcuit
+		break;
+
+	case _3V3_STAGE:
+		//enable next curcuit
+		break;
+
+	case DDR_STAGE:
+		//end power-up sequence
+		break;
+	}
 }
 
-/* TODO: eliminate repeating code*/
+static void enable_next_curcuit(power_management_curcuit next_curcuit){
+	/*
+	 * 	curcuit_5V,			// NCP711 (enable, power good); NCP302035 ( temperature)
+	curcuit_0V9,			// NCP4200
+	curcuit_1V2,			// FAN23SV10MAMPX
+	curcuit_1V8,			// NCP51402
+	curcuit_3V3,			// NCP51402
+	curcuit_DDR_VTT0,	// NCP51402
+	curcuit_DDR_VTT1,	// NCP51402
+	curcuit_DDR0,		// LD39100
+	curcuit_DDR1		// LD39100
+	 */
+	switch (next_curcuit){
+	case DRMOS_STAGE:
+		//enable next curcuit
+		break;
+
+	case _0V9_1V2_1V8_STAGE:
+		//enable next curcuit
+		break;
+
+	case _3V3_STAGE:
+		//enable next curcuit
+		break;
+
+	case DDR_STAGE:
+		//end power-up sequence
+		break;
+	}
+}
 
 static void handle_PG_OK(uint16_t GPIO_Pin){
 	/*1) get the power-up sequence stage
@@ -131,7 +171,7 @@ static void handle_PG_OK(uint16_t GPIO_Pin){
 
 			curcuit_5V_PG_OK = true;
 
-			set_power_up_stage(_0V9_1V2_1V8_STAGE);
+			run_next_power_up_stage(_0V9_1V2_1V8_STAGE);
 
 			enable_power_curcuit(curcuit_0V9);
 			enable_power_curcuit(curcuit_1V2);
@@ -293,99 +333,6 @@ static void set_power_up_stage(pwup_seq_stage stage){
 	power_up_sequence_stage = stage;
 }
 
-static pwup_seq_stage get_power_up_stage(){
+static  pwup_seq_stage get_power_up_stage(){
 	return power_up_sequence_stage;
-}
-
-// TODO: try to make more compact
-static void enable_power_curcuit(power_management_curcuit curcuit){
-	/* switch-case considered harmful, avoid */
-
-	if (curcuit == curcuit_5V){
-		HAL_GPIO_WritePin(_5V_DRMOS_EN_GPIO_Port, _5V_DRMOS_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_0V9){
-		HAL_GPIO_WritePin(_0V9_EN_GPIO_Port, _0V9_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_1V2){
-		HAL_GPIO_WritePin(_1V2_EN_GPIO_Port, _1V2_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_1V8){
-		HAL_GPIO_WritePin(_1V8_EN_GPIO_Port, _1V8_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_3V3){
-		HAL_GPIO_WritePin(_3V_3_PG_GPIO_Port, _3V3_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_DDR_VTT0){
-		HAL_GPIO_WritePin(DDR_VTT0_EN_GPIO_Port, DDR_VTT0_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_DDR_VTT1){
-		HAL_GPIO_WritePin(DDR_VTT1_EN_GPIO_Port, DDR_VTT1_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_DDR0){
-		HAL_GPIO_WritePin(DDR0_VPP_EN_GPIO_Port, DDR0_VPP_EN_Pin, GPIO_PIN_SET);
-	}
-	else if(curcuit == curcuit_DDR1){
-		HAL_GPIO_WritePin(DDR1_VPP_EN_GPIO_Port, DDR1_VPP_EN_Pin, GPIO_PIN_SET);
-
-	}
-}
-
-static void disable_power_curcuit(power_management_curcuit curcuit){
-	/* switch-case considered harmful, avoid */
-
-	if (curcuit == curcuit_5V){
-		HAL_GPIO_WritePin(_5V_DRMOS_EN_GPIO_Port, _5V_DRMOS_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_0V9){
-		HAL_GPIO_WritePin(_0V9_EN_GPIO_Port, _0V9_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_1V2){
-		HAL_GPIO_WritePin(_1V2_EN_GPIO_Port, _1V2_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_1V8){
-		HAL_GPIO_WritePin(_1V8_EN_GPIO_Port, _1V8_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_3V3){
-		HAL_GPIO_WritePin(_3V_3_PG_GPIO_Port, _3V3_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_DDR_VTT0){
-		HAL_GPIO_WritePin(DDR_VTT0_EN_GPIO_Port, DDR_VTT0_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_DDR_VTT1){
-		HAL_GPIO_WritePin(DDR_VTT1_EN_GPIO_Port, DDR_VTT1_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_DDR0){
-		HAL_GPIO_WritePin(DDR0_VPP_EN_GPIO_Port, DDR0_VPP_EN_Pin, GPIO_PIN_RESET);
-	}
-	else if(curcuit == curcuit_DDR1){
-		HAL_GPIO_WritePin(DDR1_VPP_EN_GPIO_Port, DDR1_VPP_EN_Pin, GPIO_PIN_RESET);
-
-	}
-}
-
-void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
-
-	if (GPIO_Pin != _0V9_ALERTn_FAULTn_Pin && GPIO_Pin != _5V_DRMOS_THWN_Pin) {
-		handle_PG_OK(GPIO_Pin);
-	}
-	else if (GPIO_Pin == _0V9_ALERTn_FAULTn_Pin){
-		handle_ALERTn_FAULTn();
-	}
-	else if (GPIO_Pin == _5V_DRMOS_THWN_Pin){
-		handle_temperature_OK();
-	}
-}
-
-void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin){
-
-	if (GPIO_Pin != _0V9_ALERTn_FAULTn_Pin && GPIO_Pin != _5V_DRMOS_THWN_Pin) {
-		handle_PG_failed(GPIO_Pin) ;
-	}
-	else if (GPIO_Pin == _0V9_ALERTn_FAULTn_Pin){
-		handle_ALERT_FAULT();
-	}
-	else if (GPIO_Pin == _5V_DRMOS_THWN_Pin){
-		handle_temperature_not_OK();
-	}
 }
